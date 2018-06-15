@@ -23,7 +23,7 @@ public class SimonSays implements Game {
     private static final long MONITOR_FOR_SIGN_WAIT_TIME   = 2500;
     private static final long PAUSE_BETWEEN_SIGN_WAIT_TIME = 600;
     private static final long CHOOSE_SIGNS_WAIT_DELAY      = 3500;
-    private static final float MIN_SIGN_CONFIDENCE         = 0.80f;
+    private static final float MIN_SIGN_CONFIDENCE         = 0.60f;
 
     private static final int MAX_ROUNDS                    = 5;
 
@@ -43,7 +43,7 @@ public class SimonSays implements Game {
 
     private static final int DEFAULT_SIGNS = 3;
 
-    private States currentState = States.IDLE;
+    private STATES currentState = STATES.IDLE;
 
     private SoundController soundController;
 
@@ -64,7 +64,7 @@ public class SimonSays implements Game {
         this.soundController = soundController;
     }
 
-    private enum States {
+    private enum STATES {
         IDLE,
         INITIALIZE,
         MOVE_TO_READY,
@@ -97,26 +97,26 @@ public class SimonSays implements Game {
             case INITIALIZE:
                 roundNumber = 0;
                 monitoredActions = new HashMap();
-                currentState = States.MOVE_TO_READY;
+                currentState = STATES.MOVE_TO_READY;
                 break;
             case MOVE_TO_READY:
                 setTransitionTime(MOVE_TO_READY_WAIT_TIME);
                 handController.moveToSimonSaysReady();
-                currentState = States.MOVE_TO_READY_WAIT;
+                currentState = STATES.MOVE_TO_READY_WAIT;
                 break;
             case MOVE_TO_READY_WAIT:
-                currentState = nextStateForWaitState(States.CHOOSE_SIGNS);
+                currentState = nextStateForWaitState(STATES.CHOOSE_SIGNS);
                 break;
             case CHOOSE_SIGNS:
                 showedSigns = 0;
                 generateSigns();
                 lightRingControl.runScorePulse(2, signsToShow.size(), 0);
-                soundController.playSound(SoundController.Sounds.MIRROR);
-                currentState = States.CHOOSE_SIGNS_WAIT;
+                soundController.playSound(SoundController.SOUNDS.MIRROR);
+                currentState = STATES.CHOOSE_SIGNS_WAIT;
                 setTransitionTime(CHOOSE_SIGNS_WAIT_DELAY);
                 break;
             case CHOOSE_SIGNS_WAIT:
-                currentState = nextStateForWaitState(States.SHOW_SIGN);
+                currentState = nextStateForWaitState(STATES.SHOW_SIGN);
                 break;
             case SHOW_SIGN:
                 setTransitionTime(SHOW_SIGN_WAIT_TIME);
@@ -126,39 +126,39 @@ public class SimonSays implements Game {
                 lightRingControl.showMatchingLights(showedSigns, 0);
                 soundController.playSignSound(sign);
                 handController.handleSimonSaysAction(sign);
-                currentState = States.SHOW_SIGN_WAIT;
+                currentState = STATES.SHOW_SIGN_WAIT;
                 break;
             case SHOW_SIGN_WAIT:
-                currentState = nextStateForWaitState(States.DETERMINE_IF_MORE_SIGNS_TO_SHOW);
+                currentState = nextStateForWaitState(STATES.DETERMINE_IF_MORE_SIGNS_TO_SHOW);
                 break;
             case PAUSE_BETWEEN_SIGN:
                 setTransitionTime(PAUSE_BETWEEN_SIGN_WAIT_TIME);
                 handController.moveToSimonSaysReady();
-                currentState = States.PAUSE_BETWEEN_SIGN_WAIT;
+                currentState = STATES.PAUSE_BETWEEN_SIGN_WAIT;
                 break;
             case PAUSE_BETWEEN_SIGN_WAIT:
-                currentState = nextStateForWaitState(States.DETERMINE_IF_MORE_SIGNS_TO_SHOW);
+                currentState = nextStateForWaitState(STATES.DETERMINE_IF_MORE_SIGNS_TO_SHOW);
                 break;
             case DETERMINE_IF_MORE_SIGNS_TO_SHOW:
-                currentState = signsToShow.size() > 0 ? States.SHOW_SIGN : States.PAUSE_BEFORE_MONITORING;
-                if (currentState == States.PAUSE_BEFORE_MONITORING) {
+                currentState = signsToShow.size() > 0 ? STATES.SHOW_SIGN : STATES.PAUSE_BEFORE_MONITORING;
+                if (currentState == STATES.PAUSE_BEFORE_MONITORING) {
                     lightRingControl.runScorePulse(2, signsToMatch.size(), 0);
-                    soundController.playSound(SoundController.Sounds.MIRROR);
+                    soundController.playSound(SoundController.SOUNDS.MIRROR);
                     setTransitionTime(MONITOR_FOR_SIGN_WAIT_TIME);
                 }
                 break;
             case PAUSE_BEFORE_MONITORING:
-                currentState = nextStateForWaitState(States.MONITOR_FOR_SIGN);
-                if (currentState == States.MONITOR_FOR_SIGN) {
+                currentState = nextStateForWaitState(STATES.MONITOR_FOR_SIGN);
+                if (currentState == STATES.MONITOR_FOR_SIGN) {
                     setTransitionTime(MONITOR_FOR_SIGN_WAIT_TIME);
                 }
                 break;
             case MONITOR_FOR_SIGN:
                 actionToLookup = signsToMatch.get(0);
-                currentState = nextStateForWaitState(States.DETERMINE_SIGN_CORRECT);
+                currentState = nextStateForWaitState(STATES.DETERMINE_SIGN_CORRECT);
                 long timeLeft = timeToTransition - System.currentTimeMillis();
                 if (action.equals(actionToLookup) && results.get(0).getConfidence() > 0.9f && ((float)timeLeft < ((float)MONITOR_FOR_SIGN_WAIT_TIME) * 0.75f)) {
-                    currentState = States.DETERMINE_SIGN_CORRECT;
+                    currentState = STATES.DETERMINE_SIGN_CORRECT;
                 }
                 logAction(action, results);
                 break;
@@ -167,60 +167,60 @@ public class SimonSays implements Game {
                     String matchedSign = signsToMatch.remove(0);
                     correctSigns++;
                     if (signsToMatch.size() > 0) {
-                        currentState = States.PLAY_CORRECT_SIGN;
+                        currentState = STATES.PLAY_CORRECT_SIGN;
                         setTransitionTime(MONITOR_FOR_SIGN_WAIT_TIME);
                         soundController.playSignSound(matchedSign);
                     } else {
-                        currentState = States.PREPARE_FOR_NEXT_ROUND;
+                        currentState = STATES.PREPARE_FOR_NEXT_ROUND;
                     }
                     lightRingControl.showMatchingLights(correctSigns, 0);
                     actionToLookup = null;
                 } else {
-                    currentState = States.PLAY_INCORRECT_SIGN;
+                    currentState = STATES.PLAY_INCORRECT_SIGN;
                 }
                 monitoredActions = new HashMap();
                 break;
             case PLAY_CORRECT_SIGN:
-                currentState = States.MONITOR_FOR_SIGN;
+                currentState = STATES.MONITOR_FOR_SIGN;
                 break;
             case PLAY_INCORRECT_SIGN:
                 lightRingControl.showMatchingLights(correctSigns, 1);
-                currentState = States.LOSS;
+                currentState = STATES.LOSS;
                 break;
             case PREPARE_FOR_NEXT_ROUND:
                 if (roundNumber >= MAX_ROUNDS) {
-                    currentState = States.WIN;
+                    currentState = STATES.WIN;
                 } else {
-                    soundController.playSound(SoundController.Sounds.CORRECT);
+                    soundController.playSound(SoundController.SOUNDS.CORRECT);
                     roundNumber++;
-                    currentState = States.MOVE_TO_READY;
+                    currentState = STATES.MOVE_TO_READY;
                 }
                 break;
             case WIN:
                 lightRingControl.runPulse(2, Color.GREEN);
-                soundController.playSound(SoundController.Sounds.WIN);
+                soundController.playSound(SoundController.SOUNDS.WIN);
                 setTransitionTime(END_GAME_WAIT_TIME);
                 handController.thumbsUp();
-                currentState = States.WIN_WAIT;
+                currentState = STATES.WIN_WAIT;
                 break;
             case WIN_WAIT:
-                currentState = nextStateForWaitState(States.GAME_OVER);
+                currentState = nextStateForWaitState(STATES.GAME_OVER);
                 break;
             case LOSS:
                 lightRingControl.runScorePulse(2, correctSigns, 1);
                 setTransitionTime(END_GAME_WAIT_TIME);
-                soundController.playSound(SoundController.Sounds.LOSS);
-                currentState = States.LOSS_WAIT;
+                soundController.playSound(SoundController.SOUNDS.LOSS);
+                currentState = STATES.LOSS_WAIT;
                 break;
             case LOSS_WAIT:
-                currentState = nextStateForWaitState(States.GAME_OVER);
+                currentState = nextStateForWaitState(STATES.GAME_OVER);
                 break;
             case GAME_OVER:
                 handController.loose();
                 if (gameStateListener != null) {
                     gameStateListener.gameFinished();
                 }
-                currentState = States.IDLE;
+                currentState = STATES.IDLE;
                 break;
         }
     }
@@ -255,18 +255,18 @@ public class SimonSays implements Game {
     public void start() {
         lightRingControl.runSwirl(1, Color.GREEN);
         handController.moveToSimonSaysReady();
-        soundController.playSound(SoundController.Sounds.START_GAME);
+        soundController.playSound(SoundController.SOUNDS.START_GAME);
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
-                currentState = States.INITIALIZE;
+                currentState = STATES.INITIALIZE;
             }
         }, 2000);
     }
 
     @Override
     public void stop() {
-        currentState = States.IDLE;
+        currentState = STATES.IDLE;
     }
 
     @Override
@@ -288,7 +288,7 @@ public class SimonSays implements Game {
         timeToTransition = System.currentTimeMillis() + waitTime;
     }
 
-    private States nextStateForWaitState(States nextState) {
+    private STATES nextStateForWaitState(STATES nextState) {
         if (System.currentTimeMillis() >= timeToTransition) {
             return nextState;
         } else {

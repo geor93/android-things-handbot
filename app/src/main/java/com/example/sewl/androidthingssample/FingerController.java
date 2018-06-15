@@ -2,31 +2,29 @@ package com.example.sewl.androidthingssample;
 
 import android.os.Handler;
 
-import com.sewl.deeplocal.drivers.MultiChannelServoDriver;
-
 /**
  * Created by mderrick on 10/10/17.
  */
 
 public class FingerController {
 
-    public static final int SERVO_OFF_VALUE         = 0;
-    public static final int SERVO_MAX_DEGREES       = 180;
-    public static final float MAX_RELAX_TIME_MILLIS = 500.0f;
-    private static int FLEXED_ANGLE                 = 180;
-    private static int LOOSE_ANGLE                  = 0;
+    public static final int SERVO_OFF_VALUE = 0;
 
-    private MultiChannelServoDriver servoDriver;
+    private static int FLEXED_ANGLE = 180;
 
-    private boolean reverseAngle;
-
-    private Handler settleServoHandler = new Handler();
+    private static int LOOSE_ANGLE  = 0;
 
     private final int offset;
 
     private int channel;
 
     private int currentAngle = -1;
+
+    private MultiChannelServoDriver servoDriver;
+
+    private boolean reverseAngle;
+
+    private Handler settleServoHandler = new Handler();
 
     public FingerController(int channel, MultiChannelServoDriver servoDriver, boolean reverseAngle, int offset) {
         this.channel = channel;
@@ -44,7 +42,7 @@ public class FingerController {
     }
 
     public void setAngle(int angle) {
-        int remapped = reverseAngle ? SERVO_MAX_DEGREES - angle : angle;
+        int remapped = reverseAngle ? 180 - angle : angle;
         settleServoHandler.removeCallbacksAndMessages(null);
         if (servoDriver != null) {
             if (currentAngle != remapped) {
@@ -60,7 +58,7 @@ public class FingerController {
 
     private void settleServo(int angleMoved) {
         settleServoHandler.removeCallbacksAndMessages(null);
-        long relaxTime = (long) (((float) angleMoved / SERVO_MAX_DEGREES) * MAX_RELAX_TIME_MILLIS);
+        long relaxTime = (long) (((float) angleMoved / 180.0f) * 500.0f);
         settleServoHandler.postDelayed(new Runnable() {
             @Override
             public void run() {

@@ -9,6 +9,7 @@ import android.util.Log;
 import java.util.List;
 import java.util.Map;
 
+
 /**
  * Created by mderrick on 10/16/17.
  */
@@ -30,6 +31,10 @@ public class ImageClassificationThread extends Thread {
 
     private boolean classifyingImage;
 
+    public String results_formatted;
+
+    public static String results_to_display;
+
     public ImageClassificationThread(StandbyController standbyController, Map<String, TensorFlowImageClassifier> classifiers, LightRingControl lightRingControl) {
         super("imageClassificationThread");
         this.standbyController = standbyController;
@@ -49,6 +54,7 @@ public class ImageClassificationThread extends Thread {
                 } else {
                     if (!classifyingImage) {
                         classifyImage((Bitmap) msg.obj);
+
                     }
                 }
             }
@@ -69,6 +75,19 @@ public class ImageClassificationThread extends Thread {
                 Log.i(TAG, "Results: " + results);
             }
             classifyingImage = false;
+            //remove the [2] format substrings
+            results_formatted = results.toString().replaceAll("\\[\\d+\\]\\ ", "");
+            //replace the commas with new lines
+            results_formatted = results_formatted.toString().replaceAll("\\, ", "\n");
+            //remove the [ and ]
+            results_formatted = results_formatted.toString().replaceAll("\\]|\\[", "\n");
+            //replace the word negative with none
+            results_formatted = results_formatted.toString().replaceAll("negative", "nothing");
+            //replace % with % confidence
+            results_formatted = results_formatted.toString().replaceAll("%", "% confidence");
+            results_to_display = "Android Things operating system\non a NXP i.MX7D microcontroller\nrunning TensorFlow on-device\ntook " + (System.currentTimeMillis() - currentTime) +
+                    " milliseconds\nto classify what the camera sees as\n" +
+                    results_formatted;
         }
     }
 

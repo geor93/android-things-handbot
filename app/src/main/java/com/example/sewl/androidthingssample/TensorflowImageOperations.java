@@ -31,12 +31,12 @@ public class TensorflowImageOperations {
     public static final String SPIDERMAN_OK_LABELS      = "retrained_labels_spiderman_ok_random_color.txt";
     public static final String ONE_ROCK_LABELS          = "retrained_labels_one_rock_random_color.txt";
     public static final String LOSER_THREE_LABELS       = "retrained_labels_loser_three_random_color.txt";
-    public static final String MIRROR_LABELS            = "retrained_labels_mirror_random_color_8000.txt";
+    public static final String MIRROR_LABELS            = "retrained_labels_mirror_random_color.txt";
     public static final String RPS_MODEL_FILE           = "file:///android_asset/retrained_graph_rps_random_color.pb";
     public static final String SPIDERMAN_OK_MODEL       = "file:///android_asset/retrained_graph_spiderman_ok_random_color.pb";
     public static final String ONE_ROCK_MODEL           = "file:///android_asset/retrained_graph_one_rock_random_color.pb";
     public static final String LOSER_THREE_MODEL        = "file:///android_asset/retrained_graph_loser_three_random_color.pb";
-    public static final String MIRROR_MODEL             = "file:///android_asset/retrained_graph_mirror_random_color_8000.pb";
+    public static final String MIRROR_MODEL             = "file:///android_asset/retrained_graph_mirror_random_color.pb";
     public static final String INPUT_NAME               = "input:0";
     public static final String OUTPUT_OPERATION         = "final_result";
     public static final String OUTPUT_NAME              = OUTPUT_OPERATION + ":0";
@@ -44,14 +44,14 @@ public class TensorflowImageOperations {
     public static final long[] NETWORK_STRUCTURE        = {1, IMAGE_SIZE, IMAGE_SIZE, 3};
     public static final int NUM_CLASSES                 = 1008;
 
-    private static final int MAX_BEST_RESULTS           = 3;
-    private static final float RES_CONFIDENCE_THRESHOLD = 0.1f;
-
+    private static final int MAX_BEST_RESULTS           = 4;
+    //used to be 0.1f theshold
+    private static final float RES_CONFIDENCE_THRESHOLD = 0.0f;
     public static String[] readLabels(Context context, String labelFile) {
         AssetManager assetManager = context.getAssets();
         ArrayList<String> result = new ArrayList<>();
         try (InputStream is = assetManager.open(labelFile);
-            BufferedReader br = new BufferedReader(new InputStreamReader(is))) {
+             BufferedReader br = new BufferedReader(new InputStreamReader(is))) {
             String line;
             while ((line = br.readLine()) != null) {
                 result.add(line);
@@ -64,12 +64,14 @@ public class TensorflowImageOperations {
 
     public static List<Classifier.Recognition> getBestResults(float[] confidenceLevels, String[] labels) {
         // Find the best classifications.
-        PriorityQueue<Classifier.Recognition> pq = new PriorityQueue<>(MAX_BEST_RESULTS,
+         PriorityQueue<Classifier.Recognition> pq = new PriorityQueue<>(MAX_BEST_RESULTS,
                 new Comparator<Classifier.Recognition>() {
                     @Override
                     public int compare(Classifier.Recognition lhs, Classifier.Recognition rhs) {
                         // Intentionally reversed to put high confidence at the head of the queue.
-                        return Float.compare(rhs.getConfidence(), lhs.getConfidence());
+                        //return Float.compare(rhs.getConfidence(), lhs.getConfidence());
+                        //making it do nothing, so it doesnt sort, so it stays in the same order on display
+                        return Float.compare(rhs.getConfidence(), rhs.getConfidence());
                     }
                 });
 

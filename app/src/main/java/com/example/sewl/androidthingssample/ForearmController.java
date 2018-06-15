@@ -2,20 +2,16 @@ package com.example.sewl.androidthingssample;
 
 import android.os.Handler;
 
-import com.sewl.deeplocal.drivers.MultiChannelServoDriver;
-
 /**
  * Created by mderrick on 10/17/17.
  */
 
 public class ForearmController {
 
-    public static int DEFAULT_MOTOR_SYNC_OFFSET     = 40;
-    private static int FLEXED_ANGLE                 = 20;
-    private static int MINOR_FLEXED_ANGLE           = 10;
-    private static int LOOSE_ANGLE                  = -10;
-    public static final int SERVO_MAX_DEGREES       = 180;
-    public static final long MAX_RELAX_TIME_MILLIS  = 1000;
+    public static int DEFAULT_MOTOR_SYNC_OFFSET  = 40;
+    private static int FLEXED_ANGLE              = 20;
+    private static int MINOR_FLEXED_ANGLE        = 10;
+    private static int LOOSE_ANGLE               = -10;
 
     private int channel1;
 
@@ -53,14 +49,15 @@ public class ForearmController {
         if (servoDriver != null) {
             if (currentAngle != angle) {
                 int currentMotorOffset = settingsRepository.getForearmServoOffset();
-                int remappedAngle = angle + currentMotorOffset < SERVO_MAX_DEGREES ? angle + currentMotorOffset : SERVO_MAX_DEGREES;
-                servoDriver.setAngle(channel2, SERVO_MAX_DEGREES - remappedAngle);
+                int remappedAngle = angle + currentMotorOffset < 180 ? angle + currentMotorOffset : 180;
+                servoDriver.setAngle(channel2, 180 - remappedAngle);
                 servoDriver.setAngle(channel1, angle);
             }
             this.currentAngle = angle;
-            if (angle == LOOSE_ANGLE) {
-                settleServo();
-            }
+            //this bit commented out by Stephen Hawes on 12/12/17
+            //if (angle == LOOSE_ANGLE) {
+            //    settleServo();
+            //}
         }
     }
 
@@ -72,6 +69,6 @@ public class ForearmController {
                 servoDriver.setPWM(channel1, 0, 0);
                 servoDriver.setPWM(channel2, 0, 0);
             }
-        }, MAX_RELAX_TIME_MILLIS);
+        }, 1000);
     }
 }

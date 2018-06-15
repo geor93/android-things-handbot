@@ -2,8 +2,6 @@ package com.example.sewl.androidthingssample;
 
 import android.os.Handler;
 
-import com.sewl.deeplocal.drivers.MultiChannelServoDriver;
-
 /**
  * Created by mderrick on 10/17/17.
  */
@@ -13,8 +11,6 @@ public class WristController {
     public static final int FLEXED_ANGLE             = 0;
     public static final int LOOSE_ANGLE              = 112;
     public static final int SERVO_OFF_VALUE          = 0;
-    public static final int SERVO_MAX_DEGREES        = 180;
-    public static final float MAX_RELAX_TIME_MILLIS  = 500.0f;
 
     private int channel;
 
@@ -49,13 +45,14 @@ public class WristController {
                 servoDriver.setAngle(channel, angle);
             }
             this.currentAngle = angle;
-            settleServo(diff);
+            //this line commented out by Stephen Hawes on 12/18/17
+            //settleServo(diff);
         }
     }
 
     private void settleServo(int angleMoved) {
         settleServoHandler.removeCallbacksAndMessages(null);
-        long relaxTime = (long) (((float) angleMoved / SERVO_MAX_DEGREES) * MAX_RELAX_TIME_MILLIS);
+        long relaxTime = (long) (((float) angleMoved / 180.0f) * 500.0f);
         settleServoHandler.postDelayed(new Runnable() {
             @Override
             public void run() {

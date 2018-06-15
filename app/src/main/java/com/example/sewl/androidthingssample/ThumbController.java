@@ -2,17 +2,14 @@ package com.example.sewl.androidthingssample;
 
 import android.os.Handler;
 
-import com.sewl.deeplocal.drivers.MultiChannelServoDriver;
-
 /**
  * Created by mderrick on 10/26/17.
  */
 
 public class ThumbController {
 
-    private static int FLEXED_ANGLE                 = 180;
-    private static int LOOSE_ANGLE                  = 0;
-    public static final int SERVO_MAX_DEGREES       = 180;
+    private static int FLEXED_ANGLE = 180;
+    private static int LOOSE_ANGLE  = 0;
 
     private int channel;
 
@@ -39,7 +36,7 @@ public class ThumbController {
     }
 
     public void setAngle(int angle) {
-        int remapped = reverseAngle ? SERVO_MAX_DEGREES - angle : angle;
+        int remapped = reverseAngle ? 180 - angle : angle;
         settleServoHandler.removeCallbacksAndMessages(null);
         if (servoDriver != null) {
             if (currentAngle != remapped) {

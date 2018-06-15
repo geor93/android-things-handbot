@@ -15,8 +15,8 @@ import java.util.Map;
 public class StandbyController implements GameStateListener {
 
     private static final Integer SAMPLES_PER_ACTION     = 2;
-    private static final Integer SAMPLES_TO_START_GAME  = 8;
-    public static final float MINIMUM_MIRROR_CONFIDENCE = 0.92f;
+    private static final Integer SAMPLES_TO_START_GAME  = 10;
+    public static final float MINIMUM_MIRROR_CONFIDENCE = 0.97f;
 
     private HandController handController;
 
@@ -24,7 +24,7 @@ public class StandbyController implements GameStateListener {
 
     private Map<String, Integer> monitoredActions = new HashMap<>();
 
-    private States currentState = States.IDLE;
+    private STATES currentState = STATES.IDLE;
 
     private String lastMirroredAction;
 
@@ -42,7 +42,7 @@ public class StandbyController implements GameStateListener {
 
     private int consecutiveNegatives;
 
-    public enum States {
+    public enum STATES {
         IDLE,
         ROCK_PAPER_SCISSORS,
         MATCHING,
@@ -53,12 +53,12 @@ public class StandbyController implements GameStateListener {
         this.handController = handController;
         this.lightRingControl = lightRingControl;
         this.soundController = soundController;
-        this.currentState = States.MIRROR;
+        this.currentState = STATES.MIRROR;
         lightRingControl.runPulse(1, Color.BLUE);
     }
 
     public void run(String action, List<Classifier.Recognition> results) {
-        if (currentState == States.MIRROR) {
+        if (currentState == STATES.MIRROR) {
             logMirrorAction(action, results);
             logConsecutiveNegatives(action);
             logConsecutiveCovered(action);
@@ -77,15 +77,15 @@ public class StandbyController implements GameStateListener {
                 clearLoggedActions();
                 runMirror(action);
             }
-        } else if (currentState == States.ROCK_PAPER_SCISSORS) {
+        } else if (currentState == STATES.ROCK_PAPER_SCISSORS) {
             runGame(action, results);
-        } else if (currentState == States.MATCHING) {
+        } else if (currentState == STATES.MATCHING) {
             runGame(action, results);
         }
     }
 
     public void reset() {
-        currentState = States.MIRROR;
+        currentState = STATES.MIRROR;
         consecutiveCoveredResults = 0;
         consecutiveNegatives = 0;
         clearLoggedActions();
@@ -95,7 +95,7 @@ public class StandbyController implements GameStateListener {
 
     private void runBackOffAnimation() {
         lightRingControl.flash(1, Color.RED);
-        soundController.playSound(SoundController.Sounds.TIE);
+        soundController.playSound(SoundController.SOUNDS.TIE);
     }
 
     private void logConsecutiveNegatives(String action) {
@@ -120,13 +120,13 @@ public class StandbyController implements GameStateListener {
             currentGame.shutdown();
             currentGame = null;
         }
-        currentState = States.MIRROR;
+        currentState = STATES.MIRROR;
     }
 
     public String getClassifierKey() {
-        if (currentState == States.IDLE) {
+        if (currentState == STATES.IDLE) {
             return null;
-        } else if (currentState == States.MIRROR) {
+        } else if (currentState == STATES.MIRROR) {
             return "mirror";
         } else {
             return currentGame != null ? currentGame.getClassifierKey() : null;
@@ -135,11 +135,11 @@ public class StandbyController implements GameStateListener {
 
     private void startGame() {
         if (Signs.ROCK.equals(lastMirroredAction)) {
-            currentState = States.ROCK_PAPER_SCISSORS;
+            currentState = STATES.ROCK_PAPER_SCISSORS;
             currentGame = new RockPaperScissors(handController, this, lightRingControl, soundController);
             currentGame.start();
         } else if (Signs.SCISSORS.equals(lastMirroredAction)) {
-            currentState = States.MATCHING;
+            currentState = STATES.MATCHING;
             currentGame = new SimonSays(handController, this, soundController, lightRingControl);
             currentGame.start();
         }
